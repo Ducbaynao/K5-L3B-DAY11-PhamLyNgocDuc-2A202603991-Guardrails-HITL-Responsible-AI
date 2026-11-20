@@ -178,49 +178,55 @@ def write_lab_report_md(submission: Path, report: dict, out_md: Path) -> Path:
         return "—"
 
     lines = [
-        "# Lab 11 — Auto Report",
+        "# Báo cáo bài lab Day 11 — Guardrails, HITL & Responsible AI",
         "",
-        "> File này **tự sinh** bởi `scripts/grade.py`. **Không** viết / sửa tay.",
+        "> Tôi sinh báo cáo này bằng `scripts/grade.py` từ các artifact và kết quả tự kiểm; không chỉnh sửa kết quả bằng tay.",
         "",
-        f"- Generated (UTC): `{report.get('generated_at')}`",
+        f"- Thời điểm tự kiểm (UTC): `{report.get('generated_at')}`",
         f"- Framework: `{art.get('framework') or '—'}`",
-        f"- Technical failure: **{report.get('technical_failure')}**",
+        f"- Lỗi kỹ thuật khi kiểm tra đóng gói/schema hoặc thu thập tests: **{report.get('technical_failure')}**",
         "",
-        "## Packaging",
+        "## Thành phần bài nộp của tôi",
         "",
-        f"| File | Status |",
+        "Tôi nộp các artifact sau trong thư mục `outputs/`:",
+        "",
+        f"| File | Trạng thái |",
         f"|------|--------|",
         f"| results.json | {yn(pack.get('results'))} |",
         f"| attack_results.json | {yn(pack.get('attack_results'))} |",
         f"| audit_log.json | {yn(pack.get('audit'))} |",
         f"| metrics.json | {yn(pack.get('metrics'))} |",
         "",
-        "## Schema (`results.json`)",
+        "## Kiểm tra schema (`results.json`)",
         "",
-        f"- Valid: **{schema.get('ok')}**",
-        f"- Error: `{schema.get('error')}`",
+        f"- Kết quả validate của tôi hợp lệ: **{schema.get('ok')}**",
+        f"- Lỗi schema: `{schema.get('error')}`",
         "",
-        "## Defense snapshot (từ `results.json`)",
+        "## Kết quả phòng thủ của tôi",
         "",
-        f"- Safe queries blocked: `{defense.get('safe_blocked')}/{defense.get('safe_total')}`",
-        f"- Attack queries blocked: `{defense.get('attack_blocked')}/{defense.get('attack_total')}`",
-        f"- Edge cases blocked: `{defense.get('edge_blocked')}/{defense.get('edge_total')}`",
-        f"- Rate limit blocked/sent: `{defense.get('rate_limit_blocked')}/{defense.get('rate_limit_sent')}`",
+        "Tôi đối chiếu kết quả trong `outputs/results.json`:",
         "",
-        "## Red Team snapshot (từ `attack_results.json`)",
+        f"- Câu hỏi an toàn bị chặn: `{defense.get('safe_blocked')}/{defense.get('safe_total')}`",
+        f"- Prompt tấn công bị chặn: `{defense.get('attack_blocked')}/{defense.get('attack_total')}`",
+        f"- Trường hợp biên bị chặn: `{defense.get('edge_blocked')}/{defense.get('edge_total')}`",
+        f"- Rate limit — số request bị chặn / đã gửi: `{defense.get('rate_limit_blocked')}/{defense.get('rate_limit_sent')}`",
+        "",
+        "## Kết quả Red Team của tôi",
+        "",
+        "Tôi đối chiếu bằng chứng trong `outputs/attack_results.json`:",
         "",
         f"- Provider / model: `{red.get('llm_provider')}` / `{red.get('llm_model')}`",
-        f"- Unsafe leaks (Red): `{red.get('unsafe_leaks')}/{red.get('unsafe_total')}`",
-        f"- Guards leaks (Red Advance): `{red.get('guards_leaks')}/{red.get('guards_total')}`",
+        f"- Prompt làm lộ dữ liệu trên Red: `{red.get('unsafe_leaks')}/{red.get('unsafe_total')}`",
+        f"- Prompt làm lộ dữ liệu trên Red Advance: `{red.get('guards_leaks')}/{red.get('guards_total')}`",
         "",
-        "## Public tests",
+        "## Kết quả tự kiểm public tests",
         "",
     ]
     if public.get("skipped"):
-        lines.append("- Skipped (`--skip-public-tests`).")
+        lines.append("Tôi bỏ qua public tests trong lượt này (`--skip-public-tests`).")
     else:
-        lines.append(f"- Return code: `{public.get('returncode')}`")
-        lines.append(f"- Technical failure: `{public.get('technical_failure')}`")
+        lines.append(f"- Mã thoát pytest: `{public.get('returncode')}` (0 là thành công).")
+        lines.append(f"- Lỗi kỹ thuật khi chạy tests: `{public.get('technical_failure')}`")
         stdout = (public.get("stdout") or "").strip()
         if stdout:
             lines.extend(["", "```text", stdout[-1500:], "```"])
@@ -228,11 +234,12 @@ def write_lab_report_md(submission: Path, report: dict, out_md: Path) -> Path:
     lines.extend(
         [
             "",
-            "## Notes",
+            "## Phạm vi kết quả và điểm bonus",
             "",
-            "- Artifact chấm chính: `outputs/results.json` + `outputs/attack_results.json`.",
-            "- Bonus B1/B2 do grader replay quyết định — JSON chỉ là bằng chứng.",
-            "- Không nộp `report/*.md` viết tay; dùng file này nếu cần xem tóm tắt.",
+            "- Tôi dùng `outputs/results.json` và `outputs/attack_results.json` làm artifact chấm chính.",
+            "- Tôi xem kết quả tự kiểm là bằng chứng về đóng gói, schema và public tests; đây chưa phải điểm toàn bộ rubric.",
+            "- Tôi chỉ nhận một bonus B1 hoặc B2 nếu được grader replay xác nhận; JSON không tự quyết định điểm bonus.",
+            "- Tôi dùng báo cáo tự sinh này để tóm tắt kết quả, theo yêu cầu không nộp `report/*.md` viết tay.",
             "",
         ]
     )
