@@ -8,7 +8,10 @@ Gemini Red Team dùng Google ADK trong agents/*.py — không đi qua file này.
 """
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from typing import Any, Callable
 
 from core.config import (
@@ -49,7 +52,7 @@ class OpenAIRunner:
     def _client(self):
         from openai import OpenAI
 
-        return OpenAI(**(self.client_kwargs or {}))
+        return OpenAI(**{"max_retries": 0, **(self.client_kwargs or {})})
 
     async def chat(self, agent: OpenAIAgent, user_message: str) -> str:
         for hook in self.input_hooks:
@@ -62,14 +65,43 @@ class OpenAIRunner:
             return block_msg
 
         client = self._client()
-        completion = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": agent.instruction},
-                {"role": "user", "content": user_message},
-            ],
-            temperature=self.temperature,
-        )
+        from openai import APIConnectionError, APIStatusError
+
+        # Retry the API call only: a retry must not consume local user quota again.
+        for attempt in range(4):
+            try:
+                completion = client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": agent.instruction},
+                        {"role": "user", "content": user_message},
+                    ],
+                    temperature=self.temperature,
+                )
+                break
+            except (APIConnectionError, APIStatusError) as exc:
+                status = getattr(exc, "status_code", None)
+                retryable = status is None or status in (408, 409, 429) or status >= 500
+                if not retryable or attempt == 3:
+                    raise
+                delay = 15.0 * 2 ** attempt
+                response = getattr(exc, "response", None)
+                retry_after = response.headers.get("retry-after") if response is not None else None
+                if retry_after:
+                    try:
+                        delay = float(retry_after)
+                    except ValueError:
+                        try:
+                            delay = (parsedate_to_datetime(retry_after) - datetime.now(timezone.utc)).total_seconds()
+                        except (ValueError, TypeError, OverflowError):
+                            pass
+                # Long reset windows need a later manual run, not an early retry.
+                if delay > 60:
+                    raise
+                delay = max(0.0, delay)
+                reason = f"HTTP {status}" if status is not None else type(exc).__name__
+                print(f"Provider {reason}; retry {attempt + 1}/3 in {delay:.0f}s ({self.model}).", flush=True)
+                await asyncio.sleep(delay)
         text = (completion.choices[0].message.content or "").strip()
 
         for hook in self.output_hooks:

@@ -57,6 +57,7 @@ async def part3_assignment_suite():
     print("CHECKPOINT 3: Assignment suite → outputs/*.json")
     print("=" * 60)
 
+    from openai import APIError
     from assignment.pipeline import (
         build_production_plugins,
         build_observability,
@@ -71,6 +72,17 @@ async def part3_assignment_suite():
         print("Suite finished.")
         print("Wrote outputs under repo outputs/")
         return result
+    except APIError as exc:
+        status = getattr(exc, "status_code", None)
+        reason = f"HTTP {status}" if status is not None else type(exc).__name__
+        print(
+            f"OpenRouter/provider: {reason}. "
+            "Nếu lỗi 429/5xx hoặc kết nối, hãy chờ dịch vụ phục hồi rồi chạy lại --part 3. "
+            "Nếu lỗi 401/403, kiểm tra API key và quyền truy cập trên OpenRouter.\n"
+            "Lượt chạy này chưa hoàn tất; không được tính là guardrail chặn thành công. "
+            "Log lỗi: outputs/failed_audit_log.json và outputs/failed_metrics.json."
+        )
+        raise SystemExit(1)
     except NotImplementedError as e:
         print(
             "Chưa xong Checkpoint 3 (src/assignment/pipeline.py). "

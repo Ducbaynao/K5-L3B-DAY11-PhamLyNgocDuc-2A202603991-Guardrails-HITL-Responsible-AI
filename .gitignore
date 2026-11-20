@@ -207,3 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 template-codelabs
+
+# Local diagnostics from unsuccessful API runs (submission uses successful artifacts).
+outputs/failed_audit_log.json
+outputs/failed_metrics.json
