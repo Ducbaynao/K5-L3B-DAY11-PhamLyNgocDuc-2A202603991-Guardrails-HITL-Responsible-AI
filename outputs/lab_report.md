@@ -1,50 +1,57 @@
-# Lab 11 — Auto Report
+# Báo cáo bài lab Day 11 — Guardrails, HITL & Responsible AI
 
-> File này **tự sinh** bởi `scripts/grade.py`. **Không** viết / sửa tay.
+> Tôi sinh báo cáo này bằng `scripts/grade.py` từ các artifact và kết quả tự kiểm; không chỉnh sửa kết quả bằng tay.
 
-- Generated (UTC): `2026-11-20T09:30:47.157468+00:00`
+- Thời điểm tự kiểm (UTC): `2026-11-20T09:55:36.740834+00:00`
 - Framework: `openai-sdk-with-adk-plugins`
-- Technical failure: **False**
+- Lỗi kỹ thuật khi kiểm tra đóng gói/schema hoặc thu thập tests: **False**
 
-## Packaging
+## Thành phần bài nộp của tôi
 
-| File | Status |
+Tôi nộp các artifact sau trong thư mục `outputs/`:
+
+| File | Trạng thái |
 |------|--------|
 | results.json | OK |
 | attack_results.json | OK |
 | audit_log.json | OK |
 | metrics.json | OK |
 
-## Schema (`results.json`)
+## Kiểm tra schema (`results.json`)
 
-- Valid: **True**
-- Error: `None`
+- Kết quả validate của tôi hợp lệ: **True**
+- Lỗi schema: `None`
 
-## Defense snapshot (từ `results.json`)
+## Kết quả phòng thủ của tôi
 
-- Safe queries blocked: `0/5`
-- Attack queries blocked: `7/7`
-- Edge cases blocked: `3/3`
-- Rate limit blocked/sent: `5/15`
+Tôi đối chiếu kết quả trong `outputs/results.json`:
 
-## Red Team snapshot (từ `attack_results.json`)
+- Câu hỏi an toàn bị chặn: `0/5`
+- Prompt tấn công bị chặn: `7/7`
+- Trường hợp biên bị chặn: `3/3`
+- Rate limit — số request bị chặn / đã gửi: `5/15`
+
+## Kết quả Red Team của tôi
+
+Tôi đối chiếu bằng chứng trong `outputs/attack_results.json`:
 
 - Provider / model: `openai` / `gpt-4o-mini`
-- Unsafe leaks (Red): `5/5`
-- Guards leaks (Red Advance): `0/5`
+- Prompt làm lộ dữ liệu trên Red: `5/5`
+- Prompt làm lộ dữ liệu trên Red Advance: `0/5`
 
-## Public tests
+## Kết quả tự kiểm public tests
 
-- Return code: `0`
-- Technical failure: `False`
+- Mã thoát pytest: `0` (0 là thành công).
+- Lỗi kỹ thuật khi chạy tests: `False`
 
 ```text
 ....................................................................     [100%]
-68 passed in 2.14s
+68 passed in 2.19s
 ```
 
-## Notes
+## Phạm vi kết quả và điểm bonus
 
-- Artifact chấm chính: `outputs/results.json` + `outputs/attack_results.json`.
-- Bonus B1/B2 do grader replay quyết định — JSON chỉ là bằng chứng.
-- Không nộp `report/*.md` viết tay; dùng file này nếu cần xem tóm tắt.
+- Tôi dùng `outputs/results.json` và `outputs/attack_results.json` làm artifact chấm chính.
+- Tôi xem kết quả tự kiểm là bằng chứng về đóng gói, schema và public tests; đây chưa phải điểm toàn bộ rubric.
+- Tôi chỉ nhận một bonus B1 hoặc B2 nếu được grader replay xác nhận; JSON không tự quyết định điểm bonus.
+- Tôi dùng báo cáo tự sinh này để tóm tắt kết quả, theo yêu cầu không nộp `report/*.md` viết tay.
